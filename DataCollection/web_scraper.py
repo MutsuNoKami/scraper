@@ -1,10 +1,12 @@
 
 from gettext import Catalog
 from lib2to3.pgen2 import driver
+from operator import index
 from unicodedata import name
 from xml.etree.ElementPath import xpath_tokenizer
 import json
 import time 
+import os
 import uuid
 import boto3
 from sqlalchemy import create_engine
@@ -74,7 +76,7 @@ class Scraper:
     ''' 
     def store_files(self, path_to_store: str, storage):
         with open(f"{path_to_store}/data.json", "w") as outfile:
-            json.dumps(storage,  outfile)
+            json.dump(storage, outfile)
         product_dict = {'name': [], 'price':[],'url':[],'uuid4':[]}
         self.dictionary = product_dict
         
@@ -114,8 +116,8 @@ class Scraper:
 
     def get_product(self, product_page):
         self.driver.get(product_page)
-        product_name = self.driver.find_element(by=By.XPATH, value='//h1[@class="productcard-basics__title"]').get_attribute("text")
-        product_price = self.driver.find_element(by=By.XPATH, value='//span[@class="product-actions-price__final-amount _price ng-binding"]').get_attribute("text")
+        product_name = self.driver.find_element(by=By.XPATH, value='//h1[@class="productcard-basics__title"]').text
+        product_price = self.driver.find_element(by=By.XPATH, value='//span[@class="product-actions-price__final-amount _price ng-binding"]').text
         product_url = self.driver.current_url
         product_id = self.generate_uuid_info()
         product_dict = {'name': product_name, 'price':product_price,'url':product_url,'uuid4':product_id}
@@ -140,11 +142,21 @@ class Scraper:
 
 
     def get_all_products(self):
-        prod = 0
+        
         for prod in self.link_list:
-            print(self.get_product().product_dict)
-            prod+=1
+            
+            
+            
+            storage_dictionary = self.get_product(prod)
+            dirname = os.path.dirname(__file__)
+            filename = os.path.join(dirname, "product_" + storage_dictionary['uuid4'])
+            print(filename)
+            self.directory = os.mkdir(filename)
+            
+            self.store_files(filename, storage_dictionary)
+            
         return self.get_product
+    
 
 
     def run(self):
@@ -157,4 +169,6 @@ if __name__ == '__main__':
 
     webscraper.check_top_bar()
     print(webscraper.get_container_links(xpath_to_container='//div[@class="paginated-products-grid grid"]', xpath_container_elem='//a[@class="product-tile product-tile--grid"]'))
-   
+    
+    webscraper.get_all_products()
+    
