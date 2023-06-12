@@ -45,8 +45,8 @@ class Scraper:
         self.url = "https://www.gog.com"
        # service = Service(r'C:\Users\Admin\Downloads\chromedriver_103\chromedriver.exe')
        
-        options = Options()
-
+        
+        
         #options.binary_location(r"C:\Program Files\LibreWolf\librewolf.exe")
     # options.headless = True 
         #defines the webdriver used
